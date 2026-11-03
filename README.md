@@ -150,7 +150,8 @@ integer 0 later rejects a float.
 | `src/collector.py` | Client: browse, subscribe, queue, batch-write. |
 | `src/store.py` | SQLite schema and queries. Three timestamps per sample. |
 | `src/oee.py` | OEE from tag changes. Pure — no I/O. |
-| `src/charts.py`, `src/report.py` | Timeline, waterfall, cycle histogram, HTML report. |
+| `src/charts.py`, `src/report.py` | Timeline, waterfall, cycle histogram, PDF report. |
+| `src/paper.py` | Page composition: A4 pages, tables, figure bands. |
 | `run.py` | `demo`, `server`, `collect`, `analyse`. |
 
 The simulation and the OEE maths are deliberately free of async I/O. That

@@ -91,7 +91,7 @@ def _analyse(db_path: Path, ideal_cycle: float, planned_stop: float,
         "cycle": charts.cycle_png(cycles, result.ideal_cycle_seconds,
                                   OUT_DIR / "cycle.png"),
     }
-    path = report.build(result, session, figures, OUT_DIR / "report.html")
+    path = report.build(result, session, figures, OUT_DIR / "report.pdf")
     print(f"\n  report: {path}")
     conn.close()
     return 0
