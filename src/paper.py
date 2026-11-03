@@ -127,16 +127,29 @@ class Paper:
 
     def _prose(self, figure, y: float, text: str, *, size: float = BODY,
                colour: str = INK, weight: str = "normal",
-               width: int = 96, indent: float = 0.0) -> float:
+               width: int = 96, indent: float = 0.0,
+               fit: bool = False) -> float:
         """Wrapped type from `y` downwards, returning where it ran out.
 
         `indent` insets the block, which is what keeps text that sits
         inside a tinted box clear of the box's own accent bar.
+
+        `fit` shrinks the type until the widest line fits the measure.
+        Wrapping counts characters, which is close enough for body text
+        but not for a display size, where one wide word is the whole
+        line - so a headline asks for this and a paragraph does not,
+        since nobody wants two paragraphs set at different sizes.
         """
         lines: list[str] = []
         for block in text.split("\n"):
             lines.extend(textwrap.wrap(block, width) if block.strip()
                          else [""])
+        if fit and lines:
+            room = WIDTH - indent
+            widest = max(self._width(figure, one, size, weight)
+                         for one in lines)
+            if widest > room:
+                size *= room / widest
         step = _points(size)
         for line in lines:
             figure.text(MARGIN + indent, y, line, size=size, color=colour,
@@ -146,7 +159,8 @@ class Paper:
 
     def _heading(self, figure, title: str, note: str = "") -> float:
         y = 0.945
-        y = self._prose(figure, y, title, size=HEAD, weight="bold", width=70)
+        y = self._prose(figure, y, title, size=HEAD, weight="bold",
+                        width=70, fit=True)
         figure.add_artist(plt.Line2D(
             [MARGIN, 1 - MARGIN], [y + 0.004, y + 0.004], color=COOL,
             linewidth=1.4, transform=figure.transFigure))
@@ -257,7 +271,7 @@ class Paper:
               figure_path: Path | None = None) -> None:
         figure = self._blank()
         y = self._prose(figure, 0.945, self.title, size=TITLE,
-                        weight="bold", width=46)
+                        weight="bold", width=46, fit=True)
         y -= 0.006
         if self.subtitle:
             y = self._prose(figure, y, self.subtitle, size=NOTE + 1.2,
@@ -276,7 +290,8 @@ class Paper:
             (MARGIN, y - block), 0.0075, block, facecolor=COOL,
             edgecolor="none", transform=figure.transFigure, zorder=1))
         inner = self._prose(figure, y - 0.016, headline, size=HEAD + 3,
-                            weight="bold", width=50, indent=INSET)
+                            weight="bold", width=50, indent=INSET,
+                            fit=True)
         if small:
             self._prose(figure, inner - 0.005, small, size=NOTE,
                         colour=MUTED, width=88, indent=INSET)
