@@ -52,6 +52,10 @@ BODY = 9.8
 NOTE = 8.8
 CELL = 8.4
 
+# Rows a page carries under a heading alone, used only to decide whether a
+# table that will not fit here is worth moving whole to the next page.
+PAGE_ROWS = 30
+
 
 def _points(size: float, leading: float = 1.5) -> float:
     """A line of type at `size`, as a fraction of the page height."""
@@ -330,10 +334,18 @@ class Paper:
 
         head, rows = table if table else ([], [])
         step = _points(CELL, 2.1)
+        moved = False
         while rows:
             # Whatever is left of the page, in whole rows, less the header.
             room = int((y - 0.1) / step) - 1
-            if room < 3:
+            # A table split across a page break makes the reader carry its
+            # header over, and strands a fragment on an otherwise empty
+            # page. One short enough to fit on a fresh page is better moved
+            # there whole; `moved` makes sure that is tried only once, so a
+            # table too long for any page still splits.
+            splits = 0 < room < len(rows)
+            if room < 3 or (splits and len(rows) <= PAGE_ROWS and not moved):
+                moved = True
                 self._close(figure)
                 figure = self._blank()
                 y = self._heading(figure, f"{title} (continued)")
